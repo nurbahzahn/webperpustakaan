@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BIBLIO-TECH - Perpustakaan Digital Interaktif</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['"Playfair Display"', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Sembunyikan elemen bawaan Blogger agar WebApp tampil Full Page */
+    #header-wrapper, #sidebar-wrapper, .post-header, .post-footer, #footer-wrapper, .comments, .blog-pager {
+      display: none !important;
+    }
+    .main-inner, .content-inner {
+      max-width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8fafc;
+    }
+    /* Desain Rak Virtual Kayu Efek 3D */
+    .wood-shelf {
+      background: linear-gradient(to bottom, #854d0e 0%, #a16207 40%, #713f12 50%, #451a03 100%);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2), inset 0 2px 4px rgba(255,255,255,0.2);
+      border-radius: 4px;
+      height: 20px;
+    }
+    .shelf-depth {
+      background: #451a03;
+      height: 8px;
+      opacity: 0.85;
+      border-radius: 0 0 4px 4px;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased">
+
+  <!-- BLOGGER THUMBNAIL (TERSEMBUNYI) -->
+  <div class="hidden" id="blogger-thumbnail">
+    <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=600&auto=format&fit=crop" alt="BIBLIO-TECH Cover">
+    <p>Rancang Bangun Web Perpustakaan Digital Interaktif Berbasis Blogger dengan Fitur Rak Virtual dan Gamifikasi Membaca.</p>
+  </div>
+
+  <!-- SAKLAR DEPLOYMENT & KONFIGURASI -->
+  <script>
+    // KONFIGURASI APLIKASI
+    // UBAH IS_PREVIEW KE false JIKA AKAN DI-DEPLOY KE BLOGGER TERINTEGRASI GAS
+    const IS_PREVIEW = true; 
+    const GAS_URL = "URL_DEPLOY_GAS_ANDA_DISINI";
+  </script>
+
+  <!-- NOTIFIKASI TOAST CUSTOM (No Browser Alert) -->
+  <div id="toast-container" class="fixed top-5 right-5 z-[9999] flex flex-col gap-2"></div>
+
+  <!-- KONDISI PREVIEW MODE INDIKATOR -->
+  <div id="preview-badge" class="bg-amber-500 text-white text-xs font-bold px-4 py-1.5 text-center shadow-md flex items-center justify-between transition-all duration-300">
+    <span><i class="fa-solid fa-triangle-exclamation mr-1.5 animate-bounce"></i> Menjalankan Mode Demo/Preview (Data disimpan secara lokal).</span>
+    <button onclick="dismissPreviewBadge()" class="hover:text-amber-200 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+
+  <!-- HEADER / NAVIGATION -->
+  <header class="sticky top-0 bg-white/90 backdrop-blur-md border-b border-slate-100 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        <!-- Logo -->
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="navigate('home')">
+          <div class="h-11 w-11 bg-gradient-to-tr from-emerald-600 to-teal-500 rounded-xl flex items-center justify-center text-white shadow-md shadow-emerald-200">
+            <i class="fa-solid fa-book-open-reader text-xl"></i>
+          </div>
+          <div>
+            <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">BIBLIO-TECH</span>
+            <span class="block text-[10px] tracking-widest uppercase font-bold text-slate-400">Digital Library</span>
+          </div>
+        </div>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="hidden md:flex space-x-1">
+          <button onclick="navigate('home')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-emerald-600 hover:bg-slate-50 transition-all flex items-center gap-2"><i class="fa-solid fa-house"></i> Beranda</button>
+          <button onclick="navigate('catalog')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-emerald-600 hover:bg-slate-50 transition-all flex items-center gap-2"><i class="fa-solid fa-book-bookmark"></i> Katalog</button>
+          <button onclick="navigate('shelf')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-emerald-600 hover:bg-slate-50 transition-all flex items-center gap-2"><i class="fa-solid fa-cubes"></i> Rak Virtual</button>
+          <button onclick="navigate('leaderboard')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-emerald-600 hover:bg-slate-50 transition-all flex items-center gap-2"><i class="fa-solid fa-trophy text-amber-500"></i> Ranking</button>
+        </nav>
+
+        <!-- User Actions (Login / User State) -->
+        <div id="auth-header" class="flex items-center space-x-3">
+          <!-- Dinamis diisi lewat JavaScript -->
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[calc(100vh-170px)]">
+
+    <!-- ==================== HALAMAN 1: BERANDA ==================== -->
+    <section id="page-home" class="space-y-12 page-section">
+      <!-- Hero Banner -->
+      <div class="relative bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-950 rounded-3xl overflow-hidden p-8 sm:p-12 md:p-16 text-white shadow-2xl">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.15),transparent_50%)]"></div>
+        <div class="relative max-w-2xl z-10 space-y-6">
+          <div class="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-3 py-1.5 text-xs text-emerald-400 font-semibold tracking-wider uppercase">
+            <span class="flex h-2 w-2 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>
+            <span>Platform Literasi Era Baru</span>
+          </div>
+          <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold font-serif leading-tight">Ubah Minat Baca Menjadi <span class="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">Petualangan Seru!</span></h1>
+          <p class="text-slate-300 text-base sm:text-lg max-w-lg">
+            Temukan ribuan buku berkualitas, rasakan visualisasi Rak Virtual yang memukau, kumpulkan poin membaca, dan klaim lencana kehormatan Anda.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 pt-2">
+            <button onclick="navigate('catalog')" class="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold transition-all shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2"><i class="fa-solid fa-magnifying-glass"></i> Cari Buku Favorit</button>
+            <button onclick="navigate('shelf')" class="px-6 py-3.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-cubes"></i> Telusuri Rak Buku</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistik Counter -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm text-center">
+          <div class="text-3xl font-extrabold text-slate-900 mb-1" id="stat-total-buku">120+</div>
+          <div class="text-sm text-slate-400 font-medium">Koleksi Digital</div>
+        </div>
+        <div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm text-center">
+          <div class="text-3xl font-extrabold text-slate-900 mb-1" id="stat-peminjaman-aktif">45</div>
+          <div class="text-sm text-slate-400 font-medium">Sedang Dipinjam</div>
+        </div>
+        <div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm text-center">
+          <div class="text-3xl font-extrabold text-slate-900 mb-1" id="stat-total-ulasan">1,240</div>
+          <div class="text-sm text-slate-400 font-medium">Ulasan Pembaca</div>
+        </div>
+        <div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm text-center">
+          <div class="text-3xl font-extrabold text-slate-900 mb-1" id="stat-anggota-aktif">850</div>
+          <div class="text-sm text-slate-400 font-medium">Siswa Bergabung</div>
+        </div>
+      </div>
+
+      <!-- Buku Rekomendasi / Terpopuler -->
+      <div>
+        <div class="flex justify-between items-end mb-6">
+          <div>
+            <h2 class="text-2xl font-bold text-slate-900">Rekomendasi Pustakawan</h2>
+            <p class="text-sm text-slate-500">Pilihan buku terbaik minggu ini khusus untuk Anda</p>
+          </div>
+          <button onclick="navigate('catalog')" class="text-emerald-600 hover:text-emerald-700 text-sm font-bold flex items-center gap-1 transition-colors">Lihat Semua <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div id="recommended-books-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+          <!-- Diisi via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== HALAMAN 2: KATALOG & FILTER ==================== -->
+    <section id="page-catalog" class="space-y-8 hidden page-section">
+      <div class="border-b border-slate-200 pb-5">
+        <h2 class="text-3xl font-bold text-slate-950 font-serif">Katalog Buku</h2>
+        <p class="text-slate-500 mt-1">Cari, temukan, dan reservasi buku digital dengan mudah.</p>
+      </div>
+
+      <!-- Panel Pencarian dan Filter -->
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="relative flex-1">
+          <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input type="text" id="catalog-search" oninput="applyCatalogFilters()" placeholder="Cari berdasarkan judul, penulis, atau penerbit..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white shadow-sm transition-all text-sm">
+        </div>
+        <div class="flex gap-2">
+          <select id="catalog-category-filter" onchange="applyCatalogFilters()" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-sm font-semibold text-slate-600">
+            <option value="">Semua Kategori</option>
+            <option value="Sistem Informasi">Sistem Informasi</option>
+            <option value="Teknologi">Teknologi</option>
+            <option value="Fiksi">Fiksi</option>
+            <option value="Sains">Sains</option>
+            <option value="Pengembangan Diri">Pengembangan Diri</option>
+          </select>
+          <select id="catalog-sort" onchange="applyCatalogFilters()" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-sm font-semibold text-slate-600">
+            <option value="title-asc">A - Z</option>
+            <option value="title-desc">Z - A</option>
+            <option value="rating">Rating Tertinggi</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Grid Katalog Buku -->
+      <div id="catalog-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+        <!-- Diisi dinamis via JS -->
+      </div>
+    </section>
+
+    <!-- ==================== HALAMAN 3: RAK VIRTUAL ==================== -->
+    <section id="page-shelf" class="space-y-8 hidden page-section">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+        <div>
+          <h2 class="text-3xl font-bold text-slate-950 font-serif">Rak Virtual</h2>
+          <p class="text-slate-500 mt-1">Representasi visual penempatan koleksi buku secara tiga dimensi.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <label for="shelf-filter" class="text-sm font-bold text-slate-500">Kategori Rak:</label>
+          <select id="shelf-filter" onchange="renderVirtualShelf()" class="px-3 py-1.5 rounded-lg border border-slate-200 text-sm font-semibold text-slate-600 focus:ring-emerald-500">
+            <option value="all">Tampilkan Semua</option>
+            <option value="Sistem Informasi">Sistem Informasi</option>
+            <option value="Teknologi">Teknologi</option>
+            <option value="Fiksi">Fiksi</option>
+            <option value="Sains">Sains</option>
+            <option value="Pengembangan Diri">Pengembangan Diri</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Visual Kayu Rak Buku -->
+      <div class="bg-gradient-to-br from-amber-50/50 to-orange-50/20 p-6 md:p-12 rounded-3xl border border-amber-100 shadow-inner">
+        <div id="virtual-shelf-container" class="space-y-16">
+          <!-- Baris-baris rak akan diisi secara dinamis oleh JavaScript -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== HALAMAN 4: GAMIFIKASI & LEADERBOARD ==================== -->
+    <section id="page-leaderboard" class="space-y-8 hidden page-section">
+      <div class="border-b border-slate-200 pb-5">
+        <h2 class="text-3xl font-bold text-slate-950 font-serif">Papan Peringkat Membaca</h2>
+        <p class="text-slate-500 mt-1">Ayo tingkatkan intensitas membaca Anda, raih poin sebanyak-banyaknya!</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Panel Penjelasan Gamifikasi -->
+        <div class="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-8 rounded-2xl shadow-xl flex flex-col justify-between">
+          <div class="space-y-6">
+            <div class="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center text-2xl">
+              <i class="fa-solid fa-gift"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold font-serif mb-2">Bagaimana Cara Kerja Sistem Poin?</h3>
+              <p class="text-emerald-100 text-sm leading-relaxed">
+                Setiap kali Anda mereservasi dan sukses menyelesaikan peminjaman buku tepat waktu, sistem otomatis memberikan <strong>10 Poin Membaca</strong>.
+              </p>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold font-serif mb-2">Lencana Kehormatan (Badge)</h3>
+              <p class="text-emerald-100 text-sm leading-relaxed">
+                Raih tingkatan eksklusif: <em>Bronze Reader</em> (0-50 poin), <em>Silver Bookworm</em> (51-150 poin), dan <em>Gold Scholar</em> (151+ poin) untuk dicantumkan pada kartu digital Anda!
+              </p>
+            </div>
+          </div>
+          <div class="pt-6 border-t border-emerald-500/30 mt-6 flex items-center justify-between text-xs text-emerald-200">
+            <span>Diperbarui secara realtime</span>
+            <i class="fa-solid fa-arrows-rotate animate-spin"></i>
+          </div>
+        </div>
+
+        <!-- Tabel Leaderboard -->
+        <div class="lg:col-span-2 bg-white border border-slate-100 rounded-2xl shadow-sm p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-ranking-star text-amber-500"></i> Pembaca Terbaik Bulan Ini</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-slate-100 text-slate-400 text-xs font-semibold uppercase">
+                  <th class="py-3 px-4 text-center">Rank</th>
+                  <th class="py-3 px-4">Nama Lengkap</th>
+                  <th class="py-3 px-4">Lencana</th>
+                  <th class="py-3 px-4 text-right">Skor Poin</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboard-table-body" class="divide-y divide-slate-50">
+                <!-- Diisi via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== HALAMAN 5: DASHBOARD ANGGOTA ==================== -->
+    <section id="page-member-dashboard" class="space-y-8 hidden page-section">
+      <div class="border-b border-slate-200 pb-5">
+        <h2 class="text-3xl font-bold text-slate-950 font-serif">Dashboard Anggota</h2>
+        <p class="text-slate-500 mt-1">Pantau status peminjaman, ulasan buku, dan capaian poin Anda di sini.</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Kartu Anggota Digital -->
+        <div class="bg-gradient-to-tr from-slate-900 via-slate-800 to-indigo-950 text-white rounded-2xl p-6 shadow-xl relative overflow-hidden flex flex-col justify-between h-[230px]">
+          <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl">
+            <i class="fa-solid fa-id-card"></i>
+          </div>
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="text-xs tracking-widest uppercase font-bold text-slate-400">Kartu Anggota Perpustakaan</div>
+              <h3 class="text-lg font-bold mt-1" id="member-card-name">Nama Anggota</h3>
+            </div>
+            <div class="px-2 py-1 bg-white/10 rounded border border-white/20 text-[10px] font-bold" id="member-card-badge">Level</div>
+          </div>
+          
+          <div class="my-4">
+            <div class="text-[10px] uppercase text-slate-400 tracking-wider">ID Anggota / Barcode</div>
+            <div class="text-base font-mono tracking-wider font-semibold mt-0.5" id="member-card-id">MEM-120038</div>
+            <!-- Barcode Generator Mock -->
+            <div class="h-6 mt-1 flex items-center space-x-[1px]">
+              <div class="bg-white h-full w-[2px]"></div><div class="bg-white h-full w-[1px]"></div><div class="bg-white h-full w-[3px]"></div><div class="bg-white h-full w-[1px]"></div><div class="bg-white h-full w-[2px]"></div><div class="bg-white h-full w-[2px]"></div><div class="bg-white h-full w-[4px]"></div><div class="bg-white h-full w-[1px]"></div><div class="bg-white h-full w-[2px]"></div>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-end border-t border-white/10 pt-3 text-[10px] text-slate-400">
+            <span>BIBLIO-TECH Digital System</span>
+            <span class="text-white font-bold" id="member-card-points">Total Poin: 0</span>
+          </div>
+        </div>
+
+        <!-- Detail Poin & Gamifikasi Info Card -->
+        <div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 mb-2">Pencapaian Level Anda</h3>
+            <div class="w-full bg-slate-100 rounded-full h-2.5 mb-4 mt-3">
+              <div id="badge-progress-bar" class="bg-emerald-600 h-2.5 rounded-full" style="width: 10%"></div>
+            </div>
+            <p id="badge-info-text" class="text-xs text-slate-500">Anda memerlukan beberapa poin lagi untuk membuka Lencana berikutnya.</p>
+          </div>
+          <div class="grid grid-cols-3 gap-2 mt-4 text-center">
+            <div class="p-2 border border-slate-100 rounded-xl bg-slate-50">
+              <i class="fa-solid fa-award text-amber-600 text-lg"></i>
+              <div class="text-[10px] font-bold text-slate-700 mt-1">Bronze</div>
+              <div class="text-[9px] text-slate-400">0-50 Poin</div>
+            </div>
+            <div class="p-2 border border-slate-100 rounded-xl bg-slate-50">
+              <i class="fa-solid fa-award text-slate-400 text-lg"></i>
+              <div class="text-[10px] font-bold text-slate-700 mt-1">Silver</div>
+              <div class="text-[9px] text-slate-400">51-150 Poin</div>
+            </div>
+            <div class="p-2 border border-slate-100 rounded-xl bg-slate-50">
+              <i class="fa-solid fa-award text-yellow-500 text-lg"></i>
+              <div class="text-[10px] font-bold text-slate-700 mt-1">Gold</div>
+              <div class="text-[9px] text-slate-400">151+ Poin</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rekomendasi Pintar Berdasarkan Rating -->
+        <div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 mb-2">Rekomendasi Cepat</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">Mulai perjalanan membaca Anda hari ini dengan mengklaim peminjaman buku rekomendasi sistem kami di bawah.</p>
+          </div>
+          <div class="mt-4 flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-100 cursor-pointer" onclick="navigate('catalog')">
+            <div class="h-12 w-10 bg-slate-300 rounded overflow-hidden flex-shrink-0">
+              <img id="quick-rec-cover" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=200&auto=format&fit=crop" alt="Recommended Book">
+            </div>
+            <div>
+              <div class="text-xs font-bold text-slate-800 line-clamp-1" id="quick-rec-title">Sistem Informasi Perpustakaan</div>
+              <div class="text-[10px] text-slate-400" id="quick-rec-author">Penerbit JAISI</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Riwayat Reservasi dan Status Peminjaman -->
+      <div class="bg-white border border-slate-100 rounded-2xl shadow-sm p-6">
+        <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left"></i> Daftar Pengajuan & Riwayat Reservasi</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-100 text-slate-400 text-xs font-semibold uppercase">
+                <th class="py-3 px-4">Buku</th>
+                <th class="py-3 px-4 text-center">Tanggal Pinjam</th>
+                <th class="py-3 px-4 text-center">Tanggal Kembali</th>
+                <th class="py-3 px-4 text-center">Status</th>
+                <th class="py-3 px-4 text-center">Aksi / Sanksi</th>
+              </tr>
+            </thead>
+            <tbody id="member-loans-table-body" class="divide-y divide-slate-50">
+              <!-- Diisi via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== HALAMAN 6: DASHBOARD ADMIN ==================== -->
+    <section id="page-admin-dashboard" class="space-y-8 hidden page-section">
+      <div class="border-b border-slate-200 pb-5">
+        <h2 class="text-3xl font-bold text-slate-950 font-serif">Panel Kontrol Pustakawan</h2>
+        <p class="text-slate-500 mt-1">Kelola inventori buku dan lakukan persetujuan pinjaman anggota secara instan.</p>
+      </div>
+
+      <!-- Statistik Admin -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-emerald-50 border border-emerald-100 p-6 rounded-2xl flex items-center space-x-4">
+          <div class="h-12 w-12 bg-emerald-600 rounded-xl flex items-center justify-center text-white text-lg shadow">
+            <i class="fa-solid fa-hourglass-half"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-emerald-900" id="admin-pending-count">0</div>
+            <div class="text-xs font-semibold text-emerald-600">Reservasi Menunggu Persetujuan</div>
+          </div>
+        </div>
+        <div class="bg-blue-50 border border-blue-100 p-6 rounded-2xl flex items-center space-x-4">
+          <div class="h-12 w-12 bg-blue-600 rounded-xl flex items-center justify-center text-white text-lg shadow">
+            <i class="fa-solid fa-book-open"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-blue-900" id="admin-loaned-count">0</div>
+            <div class="text-xs font-semibold text-blue-600">Buku Sedang Dibawa</div>
+          </div>
+        </div>
+        <div class="bg-purple-50 border border-purple-100 p-6 rounded-2xl flex items-center space-x-4">
+          <div class="h-12 w-12 bg-purple-600 rounded-xl flex items-center justify-center text-white text-lg shadow">
+            <i class="fa-solid fa-box-archive"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-purple-900" id="admin-total-books-count">0</div>
+            <div class="text-xs font-semibold text-purple-600">Total Macam Buku</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Form CRUD Tambah / Edit Buku -->
+        <div class="bg-white border border-slate-100 rounded-2xl shadow-sm p-6 space-y-4">
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2" id="admin-form-title"><i class="fa-solid fa-plus-circle text-emerald-600"></i> Tambah Koleksi Buku Baru</h3>
+          <form id="admin-book-form" onsubmit="saveBookForm(event)" class="space-y-3">
+            <input type="hidden" id="admin-form-book-id">
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">Judul Buku</label>
+              <input type="text" id="admin-form-title-input" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-1 focus:ring-emerald-500">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">Penulis</label>
+                <input type="text" id="admin-form-author" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-1 focus:ring-emerald-500">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">Penerbit</label>
+                <input type="text" id="admin-form-publisher" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-1 focus:ring-emerald-500">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">Kategori</label>
+                <select id="admin-form-category" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-1 focus:ring-emerald-500 bg-white">
+                  <option value="Sistem Informasi">Sistem Informasi</option>
+                  <option value="Teknologi">Teknologi</option>
+                  <option value="Fiksi">Fiksi</option>
+                  <option value="Sains">Sains</option>
+                  <option value="Pengembangan Diri">Pengembangan Diri</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">Jumlah Stok</label>
+                <input type="number" id="admin-form-stock" min="1" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-1 focus:ring-emerald-500">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">URL Cover Image</label>
+              <input type="url" id="admin-form-cover" required placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-1 focus:ring-emerald-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">Abstrak / Deskripsi Singkat</label>
+              <textarea id="admin-form-desc" rows="3" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-1 focus:ring-emerald-500"></textarea>
+            </div>
+            <div class="flex gap-2 pt-2">
+              <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm transition-all shadow-md">Simpan Data</button>
+              <button type="button" onclick="resetBookForm()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2 px-4 rounded-xl text-sm transition-all">Batal</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Tabel Kelola Reservasi Aktif -->
+        <div class="lg:col-span-2 bg-white border border-slate-100 rounded-2xl shadow-sm p-6 space-y-4">
+          <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-bell text-amber-500"></i> Persetujuan Reservasi Masuk</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr class="border-b border-slate-100 text-slate-400 text-xs font-semibold uppercase">
+                  <th class="py-3 px-4">Anggota</th>
+                  <th class="py-3 px-4">Buku Yang Dipinjam</th>
+                  <th class="py-3 px-4 text-center">Status</th>
+                  <th class="py-3 px-4 text-center">Aksi / Peninjauan</th>
+                </tr>
+              </thead>
+              <tbody id="admin-reservations-table-body" class="divide-y divide-slate-50">
+                <!-- Diisi via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabel Inventori Buku -->
+      <div class="bg-white border border-slate-100 rounded-2xl shadow-sm p-6">
+        <h3 class="text-lg font-bold text-slate-900 mb-4"><i class="fa-solid fa-list-check"></i> Daftar Semua Inventori Buku</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="border-b border-slate-100 text-slate-400 text-xs font-semibold uppercase">
+                <th class="py-3 px-4">Cover</th>
+                <th class="py-3 px-4">Informasi Buku</th>
+                <th class="py-3 px-4">Kategori</th>
+                <th class="py-3 px-4 text-center">Stok</th>
+                <th class="py-3 px-4 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="admin-books-table-body" class="divide-y divide-slate-50">
+              <!-- Diisi via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== DIALOG MODAL: DETAIL BUKU & REVIEW ==================== -->
+    <div id="book-detail-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[999] hidden items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 transform transition-all scale-95 duration-300">
+        <!-- Header Detail -->
+        <div class="p-6 md:p-8 flex flex-col md:flex-row gap-6 border-b border-slate-100 relative">
+          <button onclick="closeBookModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg transition-colors"><i class="fa-solid fa-xmark"></i></button>
+          <!-- Cover -->
+          <div class="w-32 md:w-44 bg-slate-100 rounded-2xl overflow-hidden shadow-md flex-shrink-0 mx-auto md:mx-0">
+            <img id="modal-book-cover" class="w-full h-full object-cover" src="" alt="Cover">
+          </div>
+          <!-- Ringkasan Info -->
+          <div class="flex-1 space-y-3 text-center md:text-left">
+            <span id="modal-book-category" class="inline-block bg-emerald-50 text-emerald-700 text-[10px] font-bold px-3 py-1 rounded-full border border-emerald-100">Kategori</span>
+            <h3 id="modal-book-title" class="text-2xl font-bold text-slate-900 leading-tight">Judul Lengkap Buku</h3>
+            <p id="modal-book-author" class="text-sm text-slate-500">Penulis Buku</p>
+            <div class="flex items-center justify-center md:justify-start space-x-4 py-1">
+              <div class="flex items-center text-amber-500">
+                <i class="fa-solid fa-star"></i>
+                <span id="modal-book-rating" class="ml-1 text-slate-700 font-bold text-sm">4.5</span>
+              </div>
+              <div class="text-slate-400 text-xs">|</div>
+              <div class="text-slate-600 text-xs font-semibold">Stok: <span id="modal-book-stock" class="font-extrabold text-emerald-600">0</span></div>
+            </div>
+            <!-- Tombol Reservasi -->
+            <div id="modal-action-container" class="pt-2">
+              <!-- Diisi via JS tergantung status login -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Sinopsis & Ulasan -->
+        <div class="p-6 md:p-8 space-y-6">
+          <div>
+            <h4 class="font-bold text-slate-900 mb-2 text-sm uppercase tracking-wider">Abstrak / Deskripsi</h4>
+            <p id="modal-book-desc" class="text-slate-600 text-sm leading-relaxed text-justify">Sinopsis buku di sini...</p>
+          </div>
+
+          <!-- Bagian Form Tulis Ulasan -->
+          <div id="modal-review-form-container" class="bg-slate-50 border border-slate-100 rounded-2xl p-4 hidden">
+            <h4 class="font-bold text-slate-900 mb-2 text-sm flex items-center gap-1.5"><i class="fa-regular fa-comment-dots text-emerald-600"></i> Berikan Penilaian & Ulasan</h4>
+            <div class="flex items-center space-x-1 mb-3">
+              <span class="text-xs text-slate-500 mr-2">Rating Anda:</span>
+              <button onclick="setReviewRating(1)" class="star-rating-btn text-slate-300 hover:text-amber-400 transition-colors" data-index="1"><i class="fa-solid fa-star"></i></button>
+              <button onclick="setReviewRating(2)" class="star-rating-btn text-slate-300 hover:text-amber-400 transition-colors" data-index="2"><i class="fa-solid fa-star"></i></button>
+              <button onclick="setReviewRating(3)" class="star-rating-btn text-slate-300 hover:text-amber-400 transition-colors" data-index="3"><i class="fa-solid fa-star"></i></button>
+              <button onclick="setReviewRating(4)" class="star-rating-btn text-slate-300 hover:text-amber-400 transition-colors" data-index="4"><i class="fa-solid fa-star"></i></button>
+              <button onclick="setReviewRating(5)" class="star-rating-btn text-slate-300 hover:text-amber-400 transition-colors" data-index="5"><i class="fa-solid fa-star"></i></button>
+            </div>
+            <textarea id="modal-review-comment" rows="2" placeholder="Tulis opini atau poin penting dari buku yang telah Anda pelajari..." class="w-full p-3 text-xs border border-slate-200 rounded-lg focus:ring-1 focus:ring-emerald-500 mb-2"></textarea>
+            <button onclick="submitReview()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs transition-colors">Kirim Ulasan</button>
+          </div>
+
+          <!-- Daftar Komentar & Review -->
+          <div>
+            <h4 class="font-bold text-slate-900 mb-3 text-sm flex items-center gap-1.5"><i class="fa-solid fa-users-viewfinder text-slate-400"></i> Ulasan Pembaca</h4>
+            <div id="modal-reviews-list" class="space-y-3">
+              <!-- Diisi via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== LOGIN DIALOG MODAL ==================== -->
+    <div id="login-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[999] hidden items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl border border-slate-100 relative">
+        <button onclick="toggleLoginModal(false)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg transition-colors"><i class="fa-solid fa-xmark"></i></button>
+        <div class="text-center space-y-2 mb-6">
+          <div class="h-12 w-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 font-serif">Selamat Datang Kembali!</h3>
+          <p class="text-xs text-slate-400">Gunakan akun Anda untuk melakukan reservasi dan memberi ulasan.</p>
+        </div>
+
+        <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">Username</label>
+            <input type="text" id="login-username" required placeholder="Contoh: admin atau peserta" class="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">Password</label>
+            <input type="password" id="login-password" required placeholder="Masukkan password Anda" class="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+          </div>
+          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-md shadow-emerald-100">Autentikasi Akun</button>
+        </form>
+
+        <div class="mt-6 border-t border-slate-100 pt-4 text-center">
+          <p class="text-[10px] text-slate-400">
+            Mengalami kendala akun? Hubungi Admin / Pustakawan di meja informasi.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="bg-slate-900 text-slate-400 py-10 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="h-8 w-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white"><i class="fa-solid fa-book-open-reader"></i></div>
+        <span class="text-base font-bold text-white font-serif">BIBLIO-TECH Library System</span>
+      </div>
+      <p class="text-xs">&copy; 2026 BIBLIO-TECH. Dikembangkan untuk Keperluan Jurnal Publikasi JAISI.</p>
+    </div>
+  </footer>
+
+  <!-- ==================== FRONTEND JAVASCRIPT ENGINE ==================== -->
+  <script>
+    // --- DATABASE IN-MEMORY (MOCK DATA UNTUK IS_PREVIEW = TRUE) ---
+    let db_books = [];
+    let db_users = [];
+    let db_reservations = [];
+    let db_reviews = [];
+
+    // User yang saat ini sedang aktif login
+    let currentUser = null; 
+    let currentSelectedBookId = null;
+    let selectedReviewRating = 0;
+
+    // --- DEFAULTS DATA SEEDS ---
+    const defaultBooks = [
+      { id: "B001", judul: "Sistem Informasi Terdistribusi", penulis: "Dr. Achmad Fauzi", penerbit: "Informatika Press", kategori: "Sistem Informasi", stok: 5, deskripsi: "Buku ajar komprehensif mengenai arsitektur sistem informasi modern berskala global yang relevan dengan perkembangan cloud computing dan integrasi data saat ini.", cover_url: "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=200&auto=format&fit=crop", rating_rata_rata: 4.8 },
+      { id: "B002", judul: "Implementasi Kecerdasan Buatan", penulis: "Prof. Hermawan", penerbit: "Erlangga", kategori: "Teknologi", stok: 3, deskripsi: "Membahas algoritma machine learning, deep learning, dan logika fuzzy dengan contoh kasus pemrograman Python terapan.", cover_url: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=200&auto=format&fit=crop", rating_rata_rata: 4.5 },
+      { id: "B003", judul: "Filosofi Teras: Panduan Stoikisme", penulis: "Henry Manampiring", penerbit: "Kompas Penerbit", kategori: "Pengembangan Diri", stok: 12, deskripsi: "Buku adaptasi Stoikisme Yunani-Romawi kuno yang dirancang khusus untuk kesehatan mental generasi milenial dan gen-z.", cover_url: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=200&auto=format&fit=crop", rating_rata_rata: 4.9 },
+      { id: "B004", judul: "Teori Big Data & Analitika", penulis: "Eko Prasetyo, M.T", penerbit: "Andi Offset", kategori: "Teknologi", stok: 4, deskripsi: "Panduan mendalam memahami manajemen pengolahan kluster data dalam skala terabytes menggunakan ekosistem Apache Hadoop dan Spark.", cover_url: "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?q=80&w=200&auto=format&fit=crop", rating_rata_rata: 4.2 },
+      { id: "B005", judul: "Fisika Kuantum & Kosmologi", penulis: "Dr. Stephen Santoso", penerbit: "Rineka Cipta", kategori: "Sains", stok: 2, deskripsi: "Eksplorasi mekanika kuantum partikel sub-atom dan aplikasinya dalam menyingkap misteri lubang hitam di alam semesta.", cover_url: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=200&auto=format&fit=crop", rating_rata_rata: 4.7 }
+    ];
+
+    const defaultUsers = [
+      { id: "U001", username: "admin", password: "dwsp2026", nama_lengkap: "Pustakawan Utama", role: "Admin", poin: 1000, badges: ["Gold Scholar"] },
+      { id: "U002", username: "peserta", password: "dwsp2026", nama_lengkap: "Anggota Eksperimen", role: "Anggota", poin: 45, badges: ["Bronze Reader"] },
+      { id: "U003", username: "clara", password: "dwsp2026", nama_lengkap: "Clara Amalia", role: "Anggota", poin: 180, badges: ["Gold Scholar", "Bronze Reader"] },
+      { id: "U004", username: "budi", password: "dwsp2026", nama_lengkap: "Budi Setiawan", role: "Anggota", poin: 95, badges: ["Silver Bookworm"] }
+    ];
+
+    const defaultReservations = [
+      { id: "R001", id_user: "U002", nama_user: "Anggota Eksperimen", id_buku: "B001", judul_buku: "Sistem Informasi Terdistribusi", tgl_reservasi: "2026-06-01", tgl_kembali: "2026-06-08", status: "Dipinjam" },
+      { id: "R002", id_user: "U003", nama_user: "Clara Amalia", id_buku: "B003", judul_buku: "Filosofi Teras: Panduan Stoikisme", tgl_reservasi: "2026-06-05", tgl_kembali: "2026-06-12", status: "Selesai" },
+      { id: "R003", id_user: "U004", nama_user: "Budi Setiawan", id_buku: "B002", judul_buku: "Implementasi Kecerdasan Buatan", tgl_reservasi: "2026-06-10", tgl_kembali: "2026-06-17", status: "Pending" }
+    ];
+
+    const defaultReviews = [
+      { id: "V001", id_buku: "B001", nama_user: "Budi Setiawan", rating: 5, komentar: "Buku yang sangat luar biasa untuk bahan tesis saya! Penjelasannya terstruktur.", timestamp: "2026-06-02" },
+      { id: "V002", id_buku: "B003", nama_user: "Clara Amalia", rating: 5, komentar: "Mengubah sudut pandang saya tentang hidup. Sangat layak dibaca berulang-ulang.", timestamp: "2026-06-06" }
+    ];
+
+    // --- LIFE CYCLE INIT ---
+    window.onload = function() {
+      initAppStorage();
+      navigate('home');
+      updateAuthUI();
+      renderStats();
+    };
+
+    function initAppStorage() {
+      if (IS_PREVIEW) {
+        if (!localStorage.getItem("biblio_books")) {
+          localStorage.setItem("biblio_books", JSON.stringify(defaultBooks));
+          localStorage.setItem("biblio_users", JSON.stringify(defaultUsers));
+          localStorage.setItem("biblio_reservations", JSON.stringify(defaultReservations));
+          localStorage.setItem("biblio_reviews", JSON.stringify(defaultReviews));
+        }
+        db_books = JSON.parse(localStorage.getItem("biblio_books"));
+        db_users = JSON.parse(localStorage.getItem("biblio_users"));
+        db_reservations = JSON.parse(localStorage.getItem("biblio_reservations"));
+        db_reviews = JSON.parse(localStorage.getItem("biblio_reviews"));
+        
+        // Periksa sesi login yang tersimpan
+        const savedUser = localStorage.getItem("biblio_current_user");
+        if (savedUser) {
+          currentUser = JSON.parse(savedUser);
+        }
+      } else {
+        document.getElementById('preview-badge').style.display = 'none';
+        fetchDataFromGAS();
+      }
+    }
+
+    function saveToLocalStorage() {
+      if (IS_PREVIEW) {
+        localStorage.setItem("biblio_books", JSON.stringify(db_books));
+        localStorage.setItem("biblio_users", JSON.stringify(db_users));
+        localStorage.setItem("biblio_reservations", JSON.stringify(db_reservations));
+        localStorage.setItem("biblio_reviews", JSON.stringify(db_reviews));
+        if (currentUser) {
+          localStorage.setItem("biblio_current_user", JSON.stringify(currentUser));
+        } else {
+          localStorage.removeItem("biblio_current_user");
+        }
+      }
+    }
+
+    // --- TOAST NOTIFICATION UTILITY ---
+    function showToast(message, type = 'info') {
+      const toastId = 'toast-' + Date.now();
+      const container = document.getElementById('toast-container');
+      
+      let bgColor = "bg-slate-900";
+      let icon = "fa-circle-info";
+      if (type === 'success') { bgColor = "bg-emerald-600"; icon = "fa-circle-check"; }
+      if (type === 'error') { bgColor = "bg-rose-600"; icon = "fa-triangle-exclamation"; }
+      if (type === 'warning') { bgColor = "bg-amber-500"; icon = "fa-triangle-exclamation"; }
+
+      const toastHTML = `
+        <div id="${toastId}" class="flex items-center space-x-3 text-white px-5 py-3.5 rounded-xl shadow-xl ${bgColor} transition-all duration-300 transform translate-y-2 opacity-0 text-sm font-semibold max-w-sm">
+          <i class="fa-solid ${icon} text-lg"></i>
+          <span class="flex-1">${message}</span>
+          <button onclick="document.getElementById('${toastId}').remove()" class="hover:opacity-70"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      `;
+      container.insertAdjacentHTML('beforeend', toastHTML);
+      
+      const el = document.getElementById(toastId);
+      setTimeout(() => {
+        el.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        if (document.getElementById(toastId)) {
+          el.classList.add('translate-y-2', 'opacity-0');
+          setTimeout(() => el.remove(), 300);
+        }
+      }, 4000);
+    }
+
+    function dismissPreviewBadge() {
+      document.getElementById('preview-badge').style.opacity = '0';
+      setTimeout(() => document.getElementById('preview-badge').style.display = 'none', 300);
+    }
+
+    // --- NAVIGATION ENGINE ---
+    function navigate(pageId) {
+      // Sembunyikan seluruh seksi
+      document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'));
+      // Tampilkan seksi tujuan
+      const targetPage = document.getElementById(`page-${pageId}`);
+      if (targetPage) {
+        targetPage.classList.remove('hidden');
+      }
+
+      // Atur status aktif pada link navigasi
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('text-emerald-600', 'bg-slate-50', 'font-bold');
+        btn.classList.add('text-slate-600');
+      });
+
+      // Render data halaman spesifik saat dibuka
+      if (pageId === 'home') renderHomeRecommended();
+      if (pageId === 'catalog') renderCatalogGrid(db_books);
+      if (pageId === 'shelf') renderVirtualShelf();
+      if (pageId === 'leaderboard') renderLeaderboard();
+      if (pageId === 'member-dashboard') renderMemberDashboard();
+      if (pageId === 'admin-dashboard') renderAdminDashboard();
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // --- RENDER COMPONENT: STATISTICS ---
+    function renderStats() {
+      document.getElementById('stat-total-buku').innerText = db_books.length + " Koleksi";
+      const loanCount = db_reservations.filter(r => r.status === 'Dipinjam').length;
+      document.getElementById('stat-peminjaman-aktif').innerText = loanCount + " Aktif";
+      document.getElementById('stat-total-ulasan').innerText = db_reviews.length + " Komentar";
+      const totalUserCount = db_users.filter(u => u.role === 'Anggota').length;
+      document.getElementById('stat-anggota-aktif').innerText = totalUserCount + " Siswa";
+    }
+
+    // --- RENDER COMPONENT: HOME ---
+    function renderHomeRecommended() {
+      const container = document.getElementById('recommended-books-container');
+      container.innerHTML = '';
+      const list = [...db_books].sort((a,b) => b.rating_rata_rata - a.rating_rata_rata).slice(0, 5);
+
+      list.forEach(book => {
+        const cardHTML = `
+          <div onclick="openBookModal('${book.id}')" class="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between">
+            <div>
+              <div class="aspect-[3/4] w-full bg-slate-100 rounded-xl overflow-hidden relative mb-3">
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="${book.cover_url}" alt="${book.judul}">
+                <div class="absolute top-2 right-2 bg-slate-900/80 backdrop-blur-md text-amber-400 text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1">
+                  <i class="fa-solid fa-star"></i> ${book.rating_rata_rata}
+                </div>
+              </div>
+              <span class="text-[10px] text-emerald-600 font-extrabold uppercase tracking-wider">${book.kategori}</span>
+              <h4 class="font-bold text-sm text-slate-900 line-clamp-2 mt-1 group-hover:text-emerald-600 transition-colors">${book.judul}</h4>
+              <p class="text-[11px] text-slate-400 mt-1">${book.penulis}</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-50 flex justify-between items-center text-xs">
+              <span class="text-slate-400">Stok: <strong class="text-slate-700">${book.stok}</strong></span>
+              <span class="text-emerald-600 font-bold flex items-center gap-0.5">Detail <i class="fa-solid fa-chevron-right text-[9px]"></i></span>
+            </div>
+          </div>
+        `;
+        container.insertAdjacentHTML('beforeend', cardHTML);
+      });
+    }
+
+    // --- RENDER COMPONENT: KATALOG ---
+    function renderCatalogGrid(booksToRender) {
+      const container = document.getElementById('catalog-grid');
+      container.innerHTML = '';
+
+      if (booksToRender.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-12 text-slate-400 bg-white border border-dashed border-slate-200 rounded-2xl">
+            <i class="fa-solid fa-folder-open text-4xl mb-3"></i>
+            <p class="text-sm font-semibold">Buku tidak ditemukan</p>
+          </div>
+        `;
+        return;
+      }
+
+      booksToRender.forEach(book => {
+        const cardHTML = `
+          <div onclick="openBookModal('${book.id}')" class="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between">
+            <div>
+              <div class="aspect-[3/4] w-full bg-slate-100 rounded-xl overflow-hidden relative mb-3">
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="${book.cover_url}" alt="${book.judul}">
+                <div class="absolute top-2 right-2 bg-slate-900/80 backdrop-blur-md text-amber-400 text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1">
+                  <i class="fa-solid fa-star"></i> ${book.rating_rata_rata}
+                </div>
+              </div>
+              <span class="text-[10px] text-emerald-600 font-extrabold uppercase tracking-wider">${book.kategori}</span>
+              <h4 class="font-bold text-sm text-slate-900 line-clamp-2 mt-1 group-hover:text-emerald-600 transition-colors">${book.judul}</h4>
+              <p class="text-[11px] text-slate-400 mt-1">${book.penulis}</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-50 flex justify-between items-center text-xs">
+              <span class="text-slate-400">Stok: <strong class="text-slate-700">${book.stok}</strong></span>
+              <span class="text-emerald-600 font-bold flex items-center gap-0.5">Detail <i class="fa-solid fa-chevron-right text-[9px]"></i></span>
+            </div>
+          </div>
+        `;
+        container.insertAdjacentHTML('beforeend', cardHTML);
+      });
+    }
+
+    function applyCatalogFilters() {
+      const searchVal = document.getElementById('catalog-search').value.toLowerCase();
+      const catVal = document.getElementById('catalog-category-filter').value;
+      const sortVal = document.getElementById('catalog-sort').value;
+
+      let filtered = db_books.filter(b => {
+        const matchesSearch = b.judul.toLowerCase().includes(searchVal) || 
+                              b.penulis.toLowerCase().includes(searchVal) || 
+                              b.penerbit.toLowerCase().includes(searchVal);
+        const matchesCategory = catVal === "" || b.kategori === catVal;
+        return matchesSearch && matchesCategory;
+      });
+
+      if (sortVal === "title-asc") filtered.sort((a,b) => a.judul.localeCompare(b.judul));
+      if (sortVal === "title-desc") filtered.sort((a,b) => b.judul.localeCompare(a.judul));
+      if (sortVal === "rating") filtered.sort((a,b) => b.rating_rata_rata - a.rating_rata_rata);
+
+      renderCatalogGrid(filtered);
+    }
+
+    // --- RENDER COMPONENT: RAK VIRTUAL (WOOD DESIGN) ---
+    function renderVirtualShelf() {
+      const container = document.getElementById('virtual-shelf-container');
+      const filterVal = document.getElementById('shelf-filter').value;
+      container.innerHTML = '';
+
+      let booksToShow = db_books;
+      if (filterVal !== 'all') {
+        booksToShow = db_books.filter(b => b.kategori === filterVal);
+      }
+
+      // Setiap 5 buku diletakkan pada 1 baris rak fisik
+      const booksPerShelf = 5;
+      const shelvesCount = Math.ceil(booksToShow.length / booksPerShelf) || 1;
+
+      for (let i = 0; i < shelvesCount; i++) {
+        const shelfBooks = booksToShow.slice(i * booksPerShelf, (i + 1) * booksPerShelf);
+        let booksHTML = '';
+
+        shelfBooks.forEach(book => {
+          booksHTML += `
+            <div onclick="openBookModal('${book.id}')" class="relative group cursor-pointer w-[65px] sm:w-[90px] mx-auto transform hover:-translate-y-2 transition-all duration-300">
+              <!-- Tebal punggung buku fiktif -->
+              <div class="aspect-[3/4.2] rounded-md overflow-hidden bg-slate-200 border-2 border-amber-900/40 shadow-lg relative">
+                <img class="w-full h-full object-cover" src="${book.cover_url}" alt="${book.judul}">
+                <div class="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/10"></div>
+              </div>
+              <!-- Tooltip Hover Judul -->
+              <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-900 text-white text-[10px] py-1 px-2.5 rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none w-28 text-center font-bold z-20">
+                ${book.judul}
+              </div>
+            </div>
+          `;
+        });
+
+        // Apabila rak kosong
+        if (shelfBooks.length === 0) {
+          booksHTML = `<div class="text-slate-400 text-xs font-semibold py-4 col-span-full text-center">Silakan pilih kategori rak yang berbeda</div>`;
+        }
+
+        const shelfHTML = `
+          <div class="space-y-1">
+            <!-- Tempat Buku Berdiri -->
+            <div class="flex justify-around items-end px-4 h-32 md:h-44">
+              ${booksHTML}
+            </div>
+            <!-- Rak Papan Kayu -->
+            <div class="wood-shelf w-full"></div>
+            <div class="shelf-depth w-full"></div>
+          </div>
+        `;
+        container.insertAdjacentHTML('beforeend', shelfHTML);
+      }
+    }
+
+    // --- RENDER COMPONENT: LEADERBOARD ---
+    function renderLeaderboard() {
+      const tbody = document.getElementById('leaderboard-table-body');
+      tbody.innerHTML = '';
+      
+      const rankedUsers = [...db_users].filter(u => u.role === 'Anggota').sort((a,b) => b.poin - a.poin);
+
+      rankedUsers.forEach((user, index) => {
+        let medal = index + 1;
+        if (index === 0) medal = `<span class="h-6 w-6 rounded-full bg-amber-400 text-white inline-flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-crown text-[10px]"></i></span>`;
+        else if (index === 1) medal = `<span class="h-6 w-6 rounded-full bg-slate-300 text-slate-700 inline-flex items-center justify-center font-bold text-xs">2</span>`;
+        else if (index === 2) medal = `<span class="h-6 w-6 rounded-full bg-amber-600 text-white inline-flex items-center justify-center font-bold text-xs">3</span>`;
+        else medal = `<span class="text-slate-400 font-semibold text-xs">${index + 1}</span>`;
+
+        let badgeBadge = `<span class="px-2 py-1 rounded bg-slate-100 text-slate-600 text-[10px] font-bold">Standard</span>`;
+        if (user.poin > 150) badgeBadge = `<span class="px-2.5 py-1 rounded bg-amber-100 text-amber-700 text-[10px] font-bold"><i class="fa-solid fa-award"></i> Gold Scholar</span>`;
+        else if (user.poin > 50) badgeBadge = `<span class="px-2.5 py-1 rounded bg-slate-100 text-slate-400 text-[10px] font-bold"><i class="fa-solid fa-award"></i> Silver Bookworm</span>`;
+        else if (user.poin >= 0) badgeBadge = `<span class="px-2.5 py-1 rounded bg-yellow-50 text-amber-800 text-[10px] font-bold"><i class="fa-solid fa-award"></i> Bronze Reader</span>`;
+
+        const rowHTML = `
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="py-4 px-4 text-center">${medal}</td>
+            <td class="py-4 px-4 font-bold text-slate-800 text-sm">${user.nama_lengkap} ${user.username === currentUser?.username ? '<span class="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded ml-1">Saya</span>' : ''}</td>
+            <td class="py-4 px-4">${badgeBadge}</td>
+            <td class="py-4 px-4 text-right font-extrabold text-slate-900 text-sm">${user.poin} Poin</td>
+          </tr>
+        `;
+        tbody.insertAdjacentHTML('beforeend', rowHTML);
+      });
+    }
+
+    // --- RENDER COMPONENT: MEMBER DASHBOARD ---
+    function renderMemberDashboard() {
+      if (!currentUser || currentUser.role !== 'Anggota') {
+        showToast("Harap login sebagai Anggota terlebih dahulu!", "warning");
+        navigate('home');
+        return;
+      }
+
+      // 1. Sinkronisasi Data Kartu Anggota Digital
+      document.getElementById('member-card-name').innerText = currentUser.nama_lengkap;
+      document.getElementById('member-card-id').innerText = currentUser.id;
+      document.getElementById('member-card-points').innerText = `Total Poin: ${currentUser.poin}`;
+      
+      // Hitung progress level
+      let badge = "Bronze Reader";
+      let progress = 10;
+      let infoText = "Selesaikan peminjaman buku untuk mengumpulkan poin!";
+
+      if (currentUser.poin > 150) {
+        badge = "Gold Scholar";
+        progress = 100;
+        infoText = "Hebat! Anda telah berada pada tingkat kasta tertinggi pembaca.";
+      } else if (currentUser.poin > 50) {
+        badge = "Silver Bookworm";
+        progress = Math.round((currentUser.poin / 150) * 100);
+        infoText = `Kumpulkan ${151 - currentUser.poin} poin lagi untuk mendapatkan gelar Gold Scholar.`;
+      } else {
+        progress = Math.round((currentUser.poin / 50) * 100);
+        infoText = `Kumpulkan ${51 - currentUser.poin} poin lagi untuk naik ke Silver Bookworm.`;
+      }
+
+      document.getElementById('member-card-badge').innerText = badge;
+      document.getElementById('badge-progress-bar').style.width = `${progress}%`;
+      document.getElementById('badge-info-text').innerText = infoText;
+
+      // Ambil rekomendasi cepat (buku terpopuler yang belum dipinjam)
+      if (db_books.length > 0) {
+        document.getElementById('quick-rec-title').innerText = db_books[0].judul;
+        document.getElementById('quick-rec-author').innerText = db_books[0].penulis;
+        document.getElementById('quick-rec-cover').src = db_books[0].cover_url;
+      }
+
+      // 2. Render Tabel Riwayat Transaksi Anggota
+      const tbody = document.getElementById('member-loans-table-body');
+      tbody.innerHTML = '';
+
+      const myReservations = db_reservations.filter(r => r.id_user === currentUser.id);
+
+      if (myReservations.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="py-8 text-center text-slate-400 text-xs">Anda belum pernah melakukan reservasi buku.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      myReservations.forEach(res => {
+        let statusBadge = '';
+        let actionHTML = '-';
+
+        if (res.status === 'Pending') {
+          statusBadge = `<span class="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-bold border border-amber-100">Menunggu Verifikasi</span>`;
+          actionHTML = `<button onclick="cancelReservation('${res.id}')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition-colors font-bold"><i class="fa-solid fa-xmark"></i> Batal</button>`;
+        } else if (res.status === 'Dipinjam') {
+          statusBadge = `<span class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100">Aktif Dipinjam</span>`;
+          actionHTML = `<span class="text-xs text-slate-400">Harap kembalikan buku fisik ke pustakawan</span>`;
+        } else if (res.status === 'Selesai') {
+          statusBadge = `<span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-100">Selesai Kembali</span>`;
+          actionHTML = `<span class="text-xs text-emerald-600 font-bold"><i class="fa-solid fa-circle-check"></i> +10 Poin Sukses</span>`;
+        } else if (res.status === 'Ditolak') {
+          statusBadge = `<span class="px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 text-xs font-bold border border-rose-100">Ditolak Admin</span>`;
+          actionHTML = `<span class="text-xs text-slate-400">Stok habis / ditolak</span>`;
+        }
+
+        const trHTML = `
+          <tr class="hover:bg-slate-50/50 transition-colors text-slate-700 text-sm">
+            <td class="py-4 px-4 font-bold text-slate-900">${res.judul_buku}</td>
+            <td class="py-4 px-4 text-center font-mono text-xs">${res.tgl_reservasi}</td>
+            <td class="py-4 px-4 text-center font-mono text-xs">${res.tgl_kembali}</td>
+            <td class="py-4 px-4 text-center">${statusBadge}</td>
+            <td class="py-4 px-4 text-center">${actionHTML}</td>
+          </tr>
+        `;
+        tbody.insertAdjacentHTML('beforeend', trHTML);
+      });
+    }
+
+    // --- RENDER COMPONENT: ADMIN DASHBOARD ---
+    function renderAdminDashboard() {
+      if (!currentUser || currentUser.role !== 'Admin') {
+        showToast("Akses ditolak! Anda bukan Admin.", "error");
+        navigate('home');
+        return;
+      }
+
+      // 1. Sinkronisasi Data Counter
+      const pendingCount = db_reservations.filter(r => r.status === 'Pending').length;
+      const loanedCount = db_reservations.filter(r => r.status === 'Dipinjam').length;
+      
+      document.getElementById('admin-pending-count').innerText = pendingCount;
+      document.getElementById('admin-loaned-count').innerText = loanedCount;
+      document.getElementById('admin-total-books-count').innerText = db_books.length;
+
+      // 2. Render Persetujuan Reservasi
+      const resTbody = document.getElementById('admin-reservations-table-body');
+      resTbody.innerHTML = '';
+
+      const activeReservations = db_reservations.filter(r => r.status === 'Pending' || r.status === 'Dipinjam');
+
+      if (activeReservations.length === 0) {
+        resTbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="py-8 text-center text-slate-400 text-xs">Tidak ada reservasi aktif saat ini.</td>
+          </tr>
+        `;
+      } else {
+        activeReservations.forEach(res => {
+          let statusText = '';
+          let buttonsHTML = '';
+
+          if (res.status === 'Pending') {
+            statusText = `<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">Pending</span>`;
+            buttonsHTML = `
+              <div class="flex gap-1 justify-center">
+                <button onclick="updateReservationStatus('${res.id}', 'Dipinjam')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1 px-2.5 rounded text-xs transition-colors"><i class="fa-solid fa-check"></i> Setujui</button>
+                <button onclick="updateReservationStatus('${res.id}', 'Ditolak')" class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-1 px-2.5 rounded text-xs transition-colors"><i class="fa-solid fa-xmark"></i> Tolak</button>
+              </div>
+            `;
+          } else if (res.status === 'Dipinjam') {
+            statusText = `<span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold">Dipinjam</span>`;
+            buttonsHTML = `
+              <div class="text-center">
+                <button onclick="updateReservationStatus('${res.id}', 'Selesai')" class="bg-slate-800 hover:bg-slate-950 text-white font-bold py-1 px-3 rounded text-xs transition-all"><i class="fa-solid fa-rotate-left"></i> Konfirmasi Kembali</button>
+              </div>
+            `;
+          }
+
+          const trHTML = `
+            <tr class="hover:bg-slate-50/50 transition-colors text-slate-700">
+              <td class="py-3 px-4 font-bold text-slate-900">${res.nama_user}</td>
+              <td class="py-3 px-4 font-semibold text-xs text-slate-600">${res.judul_buku}</td>
+              <td class="py-3 px-4 text-center">${statusText}</td>
+              <td class="py-3 px-4">${buttonsHTML}</td>
+            </tr>
+          `;
+          resTbody.insertAdjacentHTML('beforeend', trHTML);
+        });
+      }
+
+      // 3. Render Inventori Buku Admin
+      const booksTbody = document.getElementById('admin-books-table-body');
+      booksTbody.innerHTML = '';
+
+      db_books.forEach(book => {
+        const trHTML = `
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="py-3 px-4">
+              <img class="h-12 w-9 object-cover rounded shadow" src="${book.cover_url}" alt="Cover">
+            </td>
+            <td class="py-3 px-4">
+              <div class="font-bold text-slate-900 text-sm">${book.judul}</div>
+              <div class="text-xs text-slate-400">ID: ${book.id} | Oleh: ${book.penulis}</div>
+            </td>
+            <td class="py-3 px-4 font-semibold text-xs text-slate-500">${book.kategori}</td>
+            <td class="py-3 px-4 text-center font-bold text-slate-800 text-sm">${book.stok}</td>
+            <td class="py-3 px-4">
+              <div class="flex gap-1 justify-center">
+                <button onclick="editBookInForm('${book.id}')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded transition-colors"><i class="fa-solid fa-pen-to-square"></i></button>
+                <button onclick="deleteBook('${book.id}')" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 px-2 py-1 rounded transition-colors"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+        booksTbody.insertAdjacentHTML('beforeend', trHTML);
+      });
+    }
+
+    // --- MANAJEMEN AUTENTIKASI ---
+    function updateAuthUI() {
+      const authHeader = document.getElementById('auth-header');
+      authHeader.innerHTML = '';
+
+      if (currentUser) {
+        let dashboardBtn = '';
+        if (currentUser.role === 'Admin') {
+          dashboardBtn = `<button onclick="navigate('admin-dashboard')" class="px-4 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-slate-800 transition-all shadow-md"><i class="fa-solid fa-toolbox"></i> Panel Admin</button>`;
+        } else {
+          dashboardBtn = `<button onclick="navigate('member-dashboard')" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-emerald-500 transition-all shadow-md"><i class="fa-solid fa-id-badge"></i> Dashboard</button>`;
+        }
+
+        authHeader.innerHTML = `
+          ${dashboardBtn}
+          <div class="hidden sm:flex flex-col items-end">
+            <span class="text-xs font-bold text-slate-800">${currentUser.nama_lengkap}</span>
+            <span class="text-[9px] text-slate-400 uppercase font-extrabold tracking-wider">${currentUser.role}</span>
+          </div>
+          <button onclick="handleLogout()" class="h-10 w-10 border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-600 hover:border-rose-100 hover:bg-rose-50 transition-all" title="Logout"><i class="fa-solid fa-power-off"></i></button>
+        `;
+      } else {
+        authHeader.innerHTML = `
+          <button onclick="toggleLoginModal(true)" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-bold transition-all flex items-center gap-2"><i class="fa-solid fa-arrow-right-to-bracket"></i> Masuk Sistem</button>
+        `;
+      }
+    }
+
+    function toggleLoginModal(show) {
+      const modal = document.getElementById('login-modal');
+      if (show) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      } else {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.getElementById('login-username').value = '';
+        document.getElementById('login-password').value = '';
+      }
+    }
+
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const uVal = document.getElementById('login-username').value.trim();
+      const pVal = document.getElementById('login-password').value.trim();
+
+      if (IS_PREVIEW) {
+        const found = db_users.find(u => u.username === uVal && u.password === pVal);
+        if (found) {
+          currentUser = found;
+          saveToLocalStorage();
+          updateAuthUI();
+          toggleLoginModal(false);
+          showToast(`Berhasil masuk! Selamat bekerja, ${currentUser.nama_lengkap}.`, "success");
+          if (currentUser.role === 'Admin') navigate('admin-dashboard');
+          else navigate('member-dashboard');
+        } else {
+          showToast("Kombinasi akun gagal diverifikasi. Silakan coba lagi!", "error");
+        }
+      } else {
+        // Logika Ajax Google Apps Script
+        google.script.run.withSuccessHandler(function(response) {
+          if (response.success) {
+            currentUser = response.user;
+            updateAuthUI();
+            toggleLoginModal(false);
+            showToast("Login Sukses terverifikasi database GAS", "success");
+          } else {
+            showToast(response.message, "error");
+          }
+        }).verifyLoginBackend(uVal, pVal);
+      }
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      if (IS_PREVIEW) {
+        localStorage.removeItem("biblio_current_user");
+      }
+      updateAuthUI();
+      showToast("Sesi login Anda telah dihapus secara aman.", "info");
+      navigate('home');
+    }
+
+    // --- MODAL DETAIL BUKU & REVIEW ENGINE ---
+    function openBookModal(bookId) {
+      currentSelectedBookId = bookId;
+      const book = db_books.find(b => b.id === bookId);
+      if (!book) return;
+
+      document.getElementById('modal-book-cover').src = book.cover_url;
+      document.getElementById('modal-book-category').innerText = book.kategori;
+      document.getElementById('modal-book-title').innerText = book.judul;
+      document.getElementById('modal-book-author').innerText = `Oleh: ${book.penulis} | Penerbit: ${book.penerbit}`;
+      document.getElementById('modal-book-rating').innerText = book.rating_rata_rata.toFixed(1);
+      document.getElementById('modal-book-stock').innerText = book.stok;
+      document.getElementById('modal-book-desc').innerText = book.deskripsi;
+
+      // Render ulasan khusus buku ini
+      renderModalReviews(bookId);
+
+      // Konfigurasi area aksi (Reservasi) & Ulasan
+      const actionContainer = document.getElementById('modal-action-container');
+      const reviewFormContainer = document.getElementById('modal-review-form-container');
+      
+      actionContainer.innerHTML = '';
+      reviewFormContainer.classList.add('hidden');
+
+      if (!currentUser) {
+        actionContainer.innerHTML = `
+          <button onclick="toggleLoginModal(true); closeBookModal();" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 px-6 rounded-xl text-xs transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-lock"></i> Login untuk Reservasi Buku</button>
+        `;
+      } else if (currentUser.role === 'Anggota') {
+        reviewFormContainer.classList.remove('hidden');
+        resetReviewForm();
+
+        // Cari tahu apakah buku ini sedang dalam status dipinjam oleh user bersangkutan
+        const existingRes = db_reservations.find(r => r.id_user === currentUser.id && r.id_buku === bookId && (r.status === 'Pending' || r.status === 'Dipinjam'));
+
+        if (existingRes) {
+          actionContainer.innerHTML = `
+            <div class="bg-amber-50 border border-amber-100 text-amber-800 text-xs px-4 py-2 rounded-xl font-bold flex items-center gap-1.5 justify-center sm:justify-start">
+              <i class="fa-solid fa-triangle-exclamation"></i> Anda sedang mengajukan/meminjam buku ini.
+            </div>
+          `;
+        } else if (book.stok <= 0) {
+          actionContainer.innerHTML = `
+            <div class="bg-rose-50 border border-rose-100 text-rose-800 text-xs px-4 py-2 rounded-xl font-bold flex items-center gap-1.5 justify-center sm:justify-start">
+              <i class="fa-solid fa-circle-xmark"></i> Maaf, seluruh stok buku sedang dipinjam habis.
+            </div>
+          `;
+        } else {
+          actionContainer.innerHTML = `
+            <button onclick="submitReservation('${book.id}')" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-2"><i class="fa-solid fa-circle-plus"></i> Buat Reservasi Online (+10 Poin)</button>
+          `;
+        }
+      } else if (currentUser.role === 'Admin') {
+        actionContainer.innerHTML = `
+          <div class="bg-slate-50 border border-slate-100 text-slate-500 text-xs px-4 py-2 rounded-xl font-bold flex items-center gap-1.5 justify-center sm:justify-start">
+            <i class="fa-solid fa-circle-exclamation"></i> Anda adalah Administrator (Akses Edit melalui Panel Admin).
+          </div>
+        `;
+      }
+
+      // Tampilkan Modal
+      const modal = document.getElementById('book-detail-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeBookModal() {
+      document.getElementById('book-detail-modal').classList.add('hidden');
+      document.getElementById('book-detail-modal').classList.remove('flex');
+    }
+
+    function renderModalReviews(bookId) {
+      const listContainer = document.getElementById('modal-reviews-list');
+      listContainer.innerHTML = '';
+
+      const reviews = db_reviews.filter(v => v.id_buku === bookId);
+
+      if (reviews.length === 0) {
+        listContainer.innerHTML = `<p class="text-xs text-slate-400 italic py-2">Belum ada ulasan dari pembaca. Jadilah yang pertama memberikan review!</p>`;
+        return;
+      }
+
+      reviews.forEach(rev => {
+        let starsHTML = '';
+        for (let i = 1; i <= 5; i++) {
+          starsHTML += `<i class="fa-solid fa-star ${i <= rev.rating ? 'text-amber-400' : 'text-slate-200'}"></i>`;
+        }
+
+        const revHTML = `
+          <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs text-slate-700">
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-bold text-slate-800">${rev.nama_user}</span>
+              <span class="text-[9px] text-slate-400 font-mono">${rev.timestamp}</span>
+            </div>
+            <div class="flex items-center text-[10px] mb-2">${starsHTML}</div>
+            <p class="leading-relaxed text-slate-600">${rev.komentar}</p>
+          </div>
+        `;
+        listContainer.insertAdjacentHTML('beforeend', revHTML);
+      });
+    }
+
+    // --- LOGIKA FORM REVIEW BUKU ---
+    function setReviewRating(rating) {
+      selectedReviewRating = rating;
+      document.querySelectorAll('.star-rating-btn').forEach(btn => {
+        const index = parseInt(btn.getAttribute('data-index'));
+        if (index <= rating) {
+          btn.classList.add('text-amber-400');
+          btn.classList.remove('text-slate-300');
+        } else {
+          btn.classList.remove('text-amber-400');
+          btn.classList.add('text-slate-300');
+        }
+      });
+    }
+
+    function resetReviewForm() {
+      selectedReviewRating = 0;
+      setReviewRating(0);
+      document.getElementById('modal-review-comment').value = '';
+    }
+
+    function submitReview() {
+      if (selectedReviewRating === 0) {
+        showToast("Mohon klik bintang penilaian terlebih dahulu!", "warning");
+        return;
+      }
+      const comment = document.getElementById('modal-review-comment').value.trim();
+      if (!comment) {
+        showToast("Mohon masukkan komentar ulasan Anda!", "warning");
+        return;
+      }
+
+      const newRev = {
+        id: "V" + Date.now(),
+        id_buku: currentSelectedBookId,
+        nama_user: currentUser.nama_lengkap,
+        rating: selectedReviewRating,
+        komentar: comment,
+        timestamp: new Date().toISOString().split('T')[0]
+      };
+
+      db_reviews.push(newRev);
+
+      // Hitung ulang rata-rata rating buku tersebut
+      const book = db_books.find(b => b.id === currentSelectedBookId);
+      if (book) {
+        const allRevs = db_reviews.filter(v => v.id_buku === currentSelectedBookId);
+        const sum = allRevs.reduce((acc, curr) => acc + curr.rating, 0);
+        book.rating_rata_rata = sum / allRevs.length;
+      }
+
+      saveToLocalStorage();
+      renderStats();
+      renderModalReviews(currentSelectedBookId);
+      resetReviewForm();
+      showToast("Terima kasih atas ulasan berharga Anda!", "success");
+    }
+
+    // --- RESERVASI PEMINJAMAN ENGINE ---
+    function submitReservation(bookId) {
+      const book = db_books.find(b => b.id === bookId);
+      if (!book || book.stok <= 0) return;
+
+      const dateNow = new Date();
+      const tglPinjam = dateNow.toISOString().split('T')[0];
+      // default durasi pengembalian otomatis: 7 hari
+      const dateReturn = new Date();
+      dateReturn.setDate(dateNow.getDate() + 7);
+      const tglKembali = dateReturn.toISOString().split('T')[0];
+
+      const newRes = {
+        id: "R" + Date.now(),
+        id_user: currentUser.id,
+        nama_user: currentUser.nama_lengkap,
+        id_buku: book.id,
+        judul_buku: book.judul,
+        tgl_reservasi: tglPinjam,
+        tgl_kembali: tglKembali,
+        status: "Pending"
+      };
+
+      db_reservations.push(newRes);
+      
+      // Kurangi stok sementara
+      book.stok -= 1;
+
+      saveToLocalStorage();
+      renderStats();
+      showToast("Reservasi berhasil didaftarkan. Silakan hubungi admin!", "success");
+      closeBookModal();
+      navigate('member-dashboard');
+    }
+
+    function cancelReservation(resId) {
+      const resIndex = db_reservations.findIndex(r => r.id === resId);
+      if (resIndex === -1) return;
+
+      const res = db_reservations[resIndex];
+      // Kembalikan stok buku
+      const book = db_books.find(b => b.id === res.id_buku);
+      if (book) book.stok += 1;
+
+      db_reservations.splice(resIndex, 1);
+      saveToLocalStorage();
+      renderStats();
+      showToast("Pengajuan reservasi berhasil dibatalkan.", "info");
+      renderMemberDashboard();
+    }
+
+    // --- ADMIN PANEL CONTROLLER ACTIONS ---
+    function updateReservationStatus(resId, newStatus) {
+      const res = db_reservations.find(r => r.id === resId);
+      if (!res) return;
+
+      res.status = newStatus;
+
+      // Apabila status disetujui kembali ("Selesai"), berikan poin gamifikasi ke user
+      if (newStatus === 'Selesai') {
+        const user = db_users.find(u => u.id === res.id_user);
+        if (user) {
+          user.poin += 10; // Tambah 10 poin
+          // Periksa pembaruan badge
+          if (user.poin > 150 && !user.badges.includes("Gold Scholar")) {
+            user.badges.push("Gold Scholar");
+            showToast(`Luar biasa! ${user.nama_lengkap} mendapatkan lencana Gold Scholar!`, "success");
+          } else if (user.poin > 50 && !user.badges.includes("Silver Bookworm")) {
+            user.badges.push("Silver Bookworm");
+          }
+        }
+        // Kembalikan stok buku ke inventori
+        const book = db_books.find(b => b.id === res.id_buku);
+        if (book) book.stok += 1;
+      } else if (newStatus === 'Ditolak') {
+        // Kembalikan stok buku ke inventori
+        const book = db_books.find(b => b.id === res.id_buku);
+        if (book) book.stok += 1;
+      }
+
+      saveToLocalStorage();
+      renderStats();
+      showToast(`Reservasi diperbarui ke status: ${newStatus}`, "success");
+      renderAdminDashboard();
+    }
+
+    // --- FORM INVENTORI (CRUD) ADMIN ---
+    function resetBookForm() {
+      document.getElementById('admin-book-form').reset();
+      document.getElementById('admin-form-book-id').value = '';
+      document.getElementById('admin-form-title').innerText = "Tambah Koleksi Buku Baru";
+    }
+
+    function saveBookForm(e) {
+      e.preventDefault();
+      const idVal = document.getElementById('admin-form-book-id').value;
+      const title = document.getElementById('admin-form-title-input').value.trim();
+      const author = document.getElementById('admin-form-author').value.trim();
+      const publisher = document.getElementById('admin-form-publisher').value.trim();
+      const category = document.getElementById('admin-form-category').value;
+      const stock = parseInt(document.getElementById('admin-form-stock').value);
+      const cover = document.getElementById('admin-form-cover').value.trim();
+      const desc = document.getElementById('admin-form-desc').value.trim();
+
+      if (idVal) {
+        // Edit Mode
+        const book = db_books.find(b => b.id === idVal);
+        if (book) {
+          book.judul = title;
+          book.penulis = author;
+          book.penerbit = publisher;
+          book.kategori = category;
+          book.stok = stock;
+          book.cover_url = cover;
+          book.deskripsi = desc;
+          showToast("Data buku berhasil diperbarui!", "success");
+        }
+      } else {
+        // Create Mode
+        const newBook = {
+          id: "B" + String(db_books.length + 1).padStart(3, '0'),
+          judul: title,
+          penulis: author,
+          penerbit: publisher,
+          kategori: category,
+          stok: stock,
+          cover_url: cover,
+          deskripsi: desc,
+          rating_rata_rata: 5.0
+        };
+        db_books.push(newBook);
+        showToast("Buku baru sukses ditambahkan!", "success");
+      }
+
+      saveToLocalStorage();
+      renderStats();
+      resetBookForm();
+      renderAdminDashboard();
+    }
+
+    function editBookInForm(bookId) {
+      const book = db_books.find(b => b.id === bookId);
+      if (!book) return;
+
+      document.getElementById('admin-form-book-id').value = book.id;
+      document.getElementById('admin-form-title-input').value = book.judul;
+      document.getElementById('admin-form-author').value = book.penulis;
+      document.getElementById('admin-form-publisher').value = book.penerbit;
+      document.getElementById('admin-form-category').value = book.kategori;
+      document.getElementById('admin-form-stock').value = book.stok;
+      document.getElementById('admin-form-cover').value = book.cover_url;
+      document.getElementById('admin-form-desc').value = book.deskripsi;
+
+      document.getElementById('admin-form-title').innerText = `Edit Koleksi: ID ${book.id}`;
+      showToast("Detail buku dimuat di dalam Form.", "info");
+      window.scrollTo({ top: document.getElementById('admin-book-form').offsetTop - 100, behavior: 'smooth' });
+    }
+
+    function deleteBook(bookId) {
+      if (confirm(`Apakah Anda yakin ingin menghapus buku dengan ID ${bookId}?`)) {
+        const index = db_books.findIndex(b => b.id === bookId);
+        if (index !== -1) {
+          db_books.splice(index, 1);
+          saveToLocalStorage();
+          renderStats();
+          renderAdminDashboard();
+          showToast("Koleksi buku berhasil dihapus dari inventori.", "success");
+        }
+      }
+    }
+  </script>
+</body>
+</html>
